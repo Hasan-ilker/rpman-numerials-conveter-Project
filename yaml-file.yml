@@ -1,0 +1,48 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: roman number  converter
+Resources:
+  HsnRoman:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-04cb4ca688797756f
+      InstanceType: t2.micro
+      KeyName: firstkey
+      SecurityGroupIds:
+        - !Ref hsnsecgrp
+      Tags:
+        - Key: Name
+          Value: !Sub Hasan Roman Number Converter ${AWS::StackName} Stack
+      UserData: !Base64 |
+        #!/bin/bash
+         yum update -y
+         yum install python3 -y
+         FOLDER="https://raw.githubusercontent.com/Hasan-ilker/rpman-numerials-conveter-Project/main/"
+         cd /home/ec2-user
+         python3 -m venv env
+         source env/bin/activate
+         wget ${FOLDER}/roman-numerals-converter-app.py
+         mkdir templates && cd templates
+         wget ${FOLDER}/templates/index.html
+         wget ${FOLDER}/templates/result.html
+         cd ..
+         pip install flask
+         python3 roman-numerals-converter-app.py
+  hsnsecgrp:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ssh http # Required
+      GroupName: hasan
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+
+
+Outputs:
+  DnsName:
+    Description: hasanec2url
+    Value: !Sub
+      - http://${PublicAddress}
+      - PublicAddress: !GetAtt HsnRoman.PublicDnsName
